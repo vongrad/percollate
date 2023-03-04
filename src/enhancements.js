@@ -56,7 +56,7 @@ function imagesAtFullSize(doc) {
 		/*
 			Exclude Wikipedia links to image file pages
 		*/
-		/wiki\/File:/,
+		/wiki\/.+?:/,
 
 		/* 
 			Exclude images embedded in Markdown files
@@ -112,6 +112,49 @@ function wikipediaSpecific(doc) {
 			.mw-editsection
 		`)
 	).forEach(el => el.remove());
+
+	// Remove dl (description list) tags
+	Array.from(
+		doc.querySelectorAll(`
+			dl
+		`)
+	).forEach(el => el.remove());
+
+	// Remove sup tags
+	Array.from(
+		doc.querySelectorAll(`
+			sup
+		`)
+	).forEach(el => el.remove());
+
+	// Remove SVGs (cannot be inlined with base64)
+	Array.from(
+		doc.querySelectorAll(`
+			svg
+		`)
+	).forEach(el => el.remove());
+
+	// Remove TOC (Table of contents)
+	doc.getElementById('toc').remove();
+
+	// Remove sections that contain mainly links
+	// Examples `Literature, References` etc.
+	Array.from(
+		doc.querySelectorAll(`
+			section ul, section ol
+		`)
+	).forEach(listEl => {
+		if (Array.from(listEl.querySelectorAll('a')).length > 5) {
+			const sectionElement = listEl.closest('section');
+			if (
+				sectionElement.previousSibling &&
+				sectionElement.previousSibling.tagName.toLowerCase() === 'h2'
+			) {
+				sectionElement.previousSibling.remove();
+			}
+			sectionElement.remove();
+		}
+	});
 }
 
 function githubSpecific(doc) {

@@ -52,6 +52,7 @@ import mapRemoteResources from './src/remote-resources.js';
 import inlineImages from './src/inline-images.js';
 import get_style_attribute_value from './src/get-style-attribute-value.js';
 import { fileURLToPath } from 'url';
+import replaceTags from './src/remove-links.js';
 
 const out = process.stdout;
 const err = process.stderr;
@@ -307,6 +308,9 @@ async function cleanup(url, options) {
 				options.debug ? out : undefined
 			);
 		}
+
+		// Replace links
+		replaceTags(parsed.content, dom.window.document, 'a', 'span');
 
 		/*
 			Select the appropriate serialization method
