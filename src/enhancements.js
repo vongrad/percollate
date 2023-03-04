@@ -56,7 +56,7 @@ function imagesAtFullSize(doc) {
 		/*
 			Exclude Wikipedia links to image file pages
 		*/
-		/wiki\/.+?:/,
+		/wiki\/[a-zA-Z]+?:/,
 
 		/* 
 			Exclude images embedded in Markdown files
