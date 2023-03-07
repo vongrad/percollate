@@ -46,7 +46,9 @@ import {
 	singleImgToFigure,
 	expandDetailsElements,
 	githubSpecific,
-	wrapPreBlocks
+	wrapPreBlocks,
+	useLargestSrcSet,
+	wikipediaSetImagesWidth
 } from './src/enhancements.js';
 import mapRemoteResources from './src/remote-resources.js';
 import inlineImages from './src/inline-images.js';
@@ -77,6 +79,10 @@ const enhancePage = function (dom) {
 		ampToHtml,
 		fixLazyLoadedImages,
 		relativeToAbsoluteURIs,
+		// useLargestSrcSet,
+		doc => {
+			wikipediaSetImagesWidth(doc, 642);
+		},
 		imagesAtFullSize,
 		singleImgToFigure,
 		noUselessHref,

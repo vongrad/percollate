@@ -1,5 +1,9 @@
 import { parseSrcset, stringifySrcset } from 'srcset';
 import replaceElementType from './replace-element-type.js';
+import {
+	getLargestSrcsetItem,
+	wikiGetSpecificWidthSrc
+} from './util/images.js';
 
 /* 
 	Convert AMP markup to HMTL markup
@@ -102,6 +106,43 @@ function imagesAtFullSize(doc) {
 	});
 }
 
+function useLargestSrcSet(doc) {
+	Array.from(doc.querySelectorAll('picture source, img')).forEach(el => {
+		// Use the largest item in srcset as src
+		if (el.getAttribute('srcset')) {
+			const largestSrc = getLargestSrcsetItem(
+				parseSrcset(el.getAttribute('srcset'))
+			);
+			if (largestSrc) {
+				el.setAttribute('src', largestSrc.url);
+			}
+		}
+		// Wikipedia usually has next sibling element with class name `lazy-image-placeholder` containing the srcset
+		else if (
+			el.parentNode.tagName.toLowerCase() === 'noscript' &&
+			el.parentNode.nextElementSibling.classList.contains(
+				'lazy-image-placeholder'
+			) &&
+			el.parentNode.nextElementSibling.hasAttribute('data-srcset')
+		) {
+			const largestSrc = getLargestSrcsetItem(
+				parseSrcset(
+					el.parentNode.nextElementSibling.getAttribute('data-srcset')
+				)
+			);
+			if (largestSrc) {
+				el.setAttribute('src', largestSrc.url);
+			}
+		}
+	});
+}
+
+function wikipediaSetImagesWidth(doc, width) {
+	Array.from(doc.querySelectorAll('picture source, img')).forEach(el => {
+		el.src = wikiGetSpecificWidthSrc(el.src, width);
+	});
+}
+
 function wikipediaSpecific(doc) {
 	/*
 		Remove some screen-only things from wikipedia pages:
@@ -135,7 +176,10 @@ function wikipediaSpecific(doc) {
 	).forEach(el => el.remove());
 
 	// Remove TOC (Table of contents)
-	doc.getElementById('toc').remove();
+	const tocEl = doc.getElementById('toc');
+	if (tocEl) {
+		tocEl.remove();
+	}
 
 	// Remove sections that contain mainly links
 	// Examples `Literature, References` etc.
@@ -307,5 +351,7 @@ export {
 	singleImgToFigure,
 	expandDetailsElements,
 	githubSpecific,
-	wrapPreBlocks
+	wrapPreBlocks,
+	useLargestSrcSet,
+	wikipediaSetImagesWidth
 };
